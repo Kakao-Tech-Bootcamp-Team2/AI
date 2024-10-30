@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.api.request import get_spoonacular,get_edam
-from app.api.scrap import get_recipe_scrap
+from app.service.request import get_spoonacular,get_edam
+from app.service.scrap import get_recipe_scrap
 import random
 
 router = APIRouter()
