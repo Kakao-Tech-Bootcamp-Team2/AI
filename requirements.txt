@@ -9,4 +9,4 @@ langchain
 pinecone
 sentence_transformers
 transformers
-langchain-community
+langchain-huggingface

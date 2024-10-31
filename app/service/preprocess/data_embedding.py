@@ -1,7 +1,4 @@
-# app/services/embedding_service.py
-
-from langchain.embeddings import HuggingFaceEmbeddings
-
+from langchain_huggingface import HuggingFaceEmbeddings
 class EmbeddingService:
     def __init__(self):
         model_name = "intfloat/multilingual-e5-large-instruct"
