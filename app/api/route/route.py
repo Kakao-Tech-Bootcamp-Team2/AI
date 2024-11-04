@@ -1,7 +1,7 @@
 from fastapi import APIRouter , HTTPException
 from app.service.request import get_spoonacular,get_edam
 from app.service.scrap import get_recipe_scrap
-from app.service.deliver.recipe_deliver import RecipeService
+from app.dto.data_transfer_object import RecipeService
 from app.model.recipe_model import Recipe
 from typing import List
 import random
@@ -21,8 +21,6 @@ def get_recipes2(query:str):
 @router.get("/scrap")
 async def get_scrap() :
     max_attempts = 5
-    recipe_id = random.randint(6803892, 7037297)  # 랜덤 ID 생성
-    recipe_data = get_recipe_scrap(recipe_id)
     for _ in range(max_attempts):
         recipe_id = random.randint(6803892, 7037297)  # 랜덤 ID 생성
         recipe_data = get_recipe_scrap(recipe_id)
