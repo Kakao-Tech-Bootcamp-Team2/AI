@@ -17,12 +17,17 @@ class Recipe(BaseModel) :
             for i, step in enumerate(self.steps)
         ])
         full_text = f"{self.title}\n\n재료:\n{ingredients_text}\n\n조리 단계:\n{steps_text}"
+        print(full_text)
         return full_text
 
     def to_metadata(self) -> dict:
+        # 재료 딕셔너리의 모든 값을 하나의 리스트로 결합
+        ingredients_list = []
+        for items in self.ingredients.values():
+            ingredients_list.extend(items)
         return {
             "recipe_id": self.recipe_id,
             "title": self.title,
-            "ingredients": self.ingredients,
+            "ingredients": ingredients_list,  # 문자열의 리스트
             "steps": self.steps
         }
