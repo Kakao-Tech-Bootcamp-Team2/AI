@@ -8,8 +8,8 @@ class RecipeService:
         self.embedding_service = EmbeddingService()
         self.pinecone_repository = DatabaseConnection()
 
-    def add_recipe(self, recipe_id: int):
-        recipe_data = get_recipe_scrap(recipe_id)
+    async def add_recipe(self, recipe_id: int):
+        recipe_data = await get_recipe_scrap(recipe_id)
         if "error" in recipe_data:
             return {"error": recipe_data["error"]}
 
