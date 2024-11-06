@@ -65,7 +65,7 @@ async def get_recipe_scrap(recipe_id):
     recipe_data['steps'] = steps
 
     return recipe_data
-
+'''
 # 레시피 데이터 json 파일로 저장
 download_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 filename = os.path.join(download_folder, "crawled_recipes.json")
@@ -111,3 +111,4 @@ crawl_recipes_to_json(7035599, 7035610)  # 테스트할 때는 이 구간 근처
 
 # 데이터 반환 확인용 코드 (오류 발생 시 테스트용))
 # print(get_recipe_scrap(128671))
+'''
