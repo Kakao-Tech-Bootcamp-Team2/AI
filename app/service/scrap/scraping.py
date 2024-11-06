@@ -1,13 +1,12 @@
-import os
-import json
 import aiohttp
 import ssl
 from bs4 import BeautifulSoup
+from app.service.parse import parse_scrap_data  # parse.py에서 파싱 함수 임포트
 
 async def get_recipe_scrap(recipe_id):
     url = f"https://www.10000recipe.com/recipe/{recipe_id}"
     
-    # SSL 컨텍스트 설정 / 비동기방식으로 인한 SSL 인증서 오류 발생 해결을 위한 임시 코드
+    # SSL 컨텍스트 설정 (비동기 방식으로 인한 SSL 인증서 오류 해결)
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
@@ -28,42 +27,9 @@ async def get_recipe_scrap(recipe_id):
     if soup.find(string="레시피 정보가 없습니다"):
         return {"error": f"ID {recipe_id}에 대한 레시피 정보가 없습니다."}
     
-    recipe_data = {}
+    # 파싱 함수 호출
+    recipe_data = parse_scrap_data(soup, recipe_id)
     
-    # 레시피 제목 추출
-    title_div = soup.find('div', class_='view2_summary')
-    if title_div:
-        title = title_div.find('h3').get_text(strip=True)
-        recipe_data['title'] = title
-    else:
-        return {"error": f"ID {recipe_id}에 대한 레시피 제목을 찾을 수 없습니다."}
-    
-    # 재료 추출
-    ingredients = {}
-    ingredient_div = soup.find('div', class_='ready_ingre3')
-    if ingredient_div:
-        for ul in ingredient_div.find_all('ul'):
-            b_tag = ul.find('b')
-            if b_tag:
-                category = b_tag.get_text(strip=True)
-            else:
-                category = "재료"
-            items = [li.get_text(strip=True).replace("구매", "").strip() for li in ul.find_all('li')]
-            ingredients[category] = items
-    else:
-        return {"error": f"ID {recipe_id}에 대한 재료 정보를 찾을 수 없습니다."}
-    recipe_data['ingredients'] = ingredients
-    
-    # 조리 단계 추출
-    steps = []
-    step_div = soup.find('div', class_='view_step')
-    if step_div:
-        for i, step in enumerate(step_div.find_all('div', class_='view_step_cont'), 1):
-            steps.append(f"Step {i}: {step.get_text(strip=True)}")
-    else:
-        return {"error": f"ID {recipe_id}에 대한 조리 단계를 찾을 수 없습니다."}
-    recipe_data['steps'] = steps
-
     return recipe_data
 '''
 # 레시피 데이터 json 파일로 저장

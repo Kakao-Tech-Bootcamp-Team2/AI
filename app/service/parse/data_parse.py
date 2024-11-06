@@ -24,3 +24,39 @@ def parse_data(xml_string):
         }
         recipes.append(recipe)
     return recipes
+
+def parse_scrap_data(soup, recipe_id):
+    recipe_data = {}
+    
+    # 레시피 제목 추출
+    title_div = soup.find('div', class_='view2_summary')
+    if title_div:
+        title = title_div.find('h3').get_text(strip=True)
+        recipe_data['title'] = title
+    else:
+        return {"error": f"ID {recipe_id}에 대한 레시피 제목을 찾을 수 없습니다."}
+    
+    # 재료 추출
+    ingredients = {}
+    ingredient_div = soup.find('div', class_='ready_ingre3')
+    if ingredient_div:
+        for ul in ingredient_div.find_all('ul'):
+            b_tag = ul.find('b')
+            category = b_tag.get_text(strip=True) if b_tag else "재료"
+            items = [li.get_text(strip=True).replace("구매", "").strip() for li in ul.find_all('li')]
+            ingredients[category] = items
+        recipe_data['ingredients'] = ingredients
+    else:
+        return {"error": f"ID {recipe_id}에 대한 재료 정보를 찾을 수 없습니다."}
+    
+    # 조리 단계 추출
+    steps = []
+    step_div = soup.find('div', class_='view_step')
+    if step_div:
+        for i, step in enumerate(step_div.find_all('div', class_='view_step_cont'), 1):
+            steps.append(f"Step {i}: {step.get_text(strip=True)}")
+        recipe_data['steps'] = steps
+    else:
+        return {"error": f"ID {recipe_id}에 대한 조리 단계를 찾을 수 없습니다."}
+    
+    return recipe_data
