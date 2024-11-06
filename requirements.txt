@@ -5,3 +5,8 @@ pydantic
 pydantic-settings
 python-dotenv
 beautifulsoup4
+langchain
+pinecone
+sentence_transformers
+transformers
+langchain-huggingface

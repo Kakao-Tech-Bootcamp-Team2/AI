@@ -1,32 +1,35 @@
 import os
-import requests
 import json
+import aiohttp
+import ssl
 from bs4 import BeautifulSoup
 
-def get_recipe_scrap(recipe_id):
-    url = f"http://www.10000recipe.com/recipe/{recipe_id}"
-    page = requests.get(url)
-
-    try:
-        page = requests.get(url, timeout=10)
+async def get_recipe_scrap(recipe_id):
+    url = f"https://www.10000recipe.com/recipe/{recipe_id}"
     
-    # 서버 연결 문제나 요청 실패 시 예외 발생 방지를 위해 예외 처리 
-    except requests.RequestException as e:
+    # SSL 컨텍스트 설정 / 비동기방식으로 인한 SSL 인증서 오류 발생 해결을 위한 임시 코드
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+    
+    try:
+        # SSL 컨텍스트를 connector에 적용
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+        async with aiohttp.ClientSession(connector=connector) as session:
+            async with session.get(url, timeout=10) as response:
+                if response.status != 200:
+                    return {"error": f"ID {recipe_id}에 대한 페이지를 불러오지 못했습니다."}
+                content = await response.text()
+    except aiohttp.ClientError as e:
         return {"error": f"ID {recipe_id}에 대한 페이지 요청 중 오류 발생: {e}"}
     
-    # 페이지가 정상적으로 로드되지 않은 경우 예외 처리
-    if page.status_code != 200:
-        return {"error": f"ID {recipe_id}에 대한 페이지를 불러오지 못했습니다."}
-        
-    soup = BeautifulSoup(page.content, 'html.parser')
-        
-    # "레시피 정보가 없습니다" 메시지 확인
+    soup = BeautifulSoup(content, 'html.parser')
+    
     if soup.find(string="레시피 정보가 없습니다"):
         return {"error": f"ID {recipe_id}에 대한 레시피 정보가 없습니다."}
     
-        
     recipe_data = {}
-        
+    
     # 레시피 제목 추출
     title_div = soup.find('div', class_='view2_summary')
     if title_div:
@@ -34,19 +37,23 @@ def get_recipe_scrap(recipe_id):
         recipe_data['title'] = title
     else:
         return {"error": f"ID {recipe_id}에 대한 레시피 제목을 찾을 수 없습니다."}
-        
+    
     # 재료 추출
     ingredients = {}
     ingredient_div = soup.find('div', class_='ready_ingre3')
     if ingredient_div:
         for ul in ingredient_div.find_all('ul'):
-            category = ul.find('b').get_text(strip=True)
+            b_tag = ul.find('b')
+            if b_tag:
+                category = b_tag.get_text(strip=True)
+            else:
+                category = "재료"
             items = [li.get_text(strip=True).replace("구매", "").strip() for li in ul.find_all('li')]
             ingredients[category] = items
     else:
         return {"error": f"ID {recipe_id}에 대한 재료 정보를 찾을 수 없습니다."}
     recipe_data['ingredients'] = ingredients
-        
+    
     # 조리 단계 추출
     steps = []
     step_div = soup.find('div', class_='view_step')
@@ -57,7 +64,7 @@ def get_recipe_scrap(recipe_id):
         return {"error": f"ID {recipe_id}에 대한 조리 단계를 찾을 수 없습니다."}
     recipe_data['steps'] = steps
 
-    return recipe_data  # 유효한 레시피 데이터 반환
+    return recipe_data
 
 # 레시피 데이터 json 파일로 저장
 download_folder = os.path.join(os.path.expanduser("~"), "Downloads")
