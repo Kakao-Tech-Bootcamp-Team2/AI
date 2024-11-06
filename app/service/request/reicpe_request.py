@@ -1,7 +1,6 @@
-from fastapi import HTTPException
 from app.core import setting
-import requests
 import aiohttp,ssl
+from app.service.parse import parse_api_data  # parse.py에서 파싱 함수 임포트
 
 async def get_recipe_api(start: int,end: int):
     url = f'http://openapi.foodsafetykorea.go.kr/api/{setting.RECIPE_DB_API_KEY}/COOKRCP01/XML/{start}/{end}'
@@ -17,6 +16,7 @@ async def get_recipe_api(start: int,end: int):
                 if response.status != 200 :
                     raise {"error" : "API를 불러오지 못했습니다."}
                 content = await response.text()
-                return content
+                recipe_data = parse_api_data(content)
+                return recipe_data
     except aiohttp.ClientError as e:
         return {"error":"API요청 중 오류가 발생했습니다 : {e}"}

@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-def parse_data(xml_string):
+def parse_api_data(xml_string):
     try:
         root = ET.fromstring(xml_string)
     except ET.ParseError as e:
