@@ -23,7 +23,7 @@ class RecipeService:
         embedding = self.embedding_service.embed_text([text])[0]
 
         # 벡터 및 메타데이터 저장
-        self.pinecone_repository.upsert_recipe(recipe_id, embedding, recipe.to_metadata())
+        self.pinecone_repository.upsert_recipe(embedding, recipe.to_metadata())
 
         return {"status": "success"}
 
