@@ -34,12 +34,14 @@ async def get_scrap() :
     # 모든 시도가 실패한 경우 에러 메시지 반환
     return {"error": "유효한 레시피를 찾을 수 없습니다. 다시 시도해 주세요."}
 
-@router.post("/recipes/{recipe_id}", response_model=dict)
-async def add_recipe(recipe_id: int):
-    result = await recipe_service.add_recipe(recipe_id)
+@router.post("/recipes/test", response_model=dict)
+async def add_recipe():
+    recipe_data = await get_recipe_api(2,2) # api에서 불러올때 데이터 형식
+    #recipe_data = await get_scrap() -> 스크랩시에 데이터 형식
+    result = await recipe_service.add_recipe(recipe_data)
     if result.get("error"):
         raise HTTPException(status_code=404, detail=result["error"])
-    return {"message": f"레시피 {recipe_id}가 성공적으로 추가되었습니다."}
+    return {"message": "레시피가 성공적으로 추가되었습니다."}
 
 @router.get("/recipes/search", response_model=List[Recipe])
 async def search_recipes(query: str):
