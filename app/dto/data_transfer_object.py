@@ -8,6 +8,7 @@ class RecipeService:
         self.pinecone_repository = DatabaseConnection()
 
     async def add_recipe(self,recipe_data):
+        print("레시피추가중")
         if "error" in recipe_data:
             return {"error": recipe_data["error"]}
 
