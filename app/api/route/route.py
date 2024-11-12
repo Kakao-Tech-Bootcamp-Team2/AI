@@ -10,9 +10,9 @@ router = APIRouter()
 recipe_service = RecipeService()
 
 
-@router.get("/recipes/{start}/{end}")
-async def get_recipes(start:int,end:int):
-    recipe_data = await get_recipe_api(start,end)
+@router.get("/recipes/{num}}")
+async def get_recipes(num:int):
+    recipe_data = await get_recipe_api(num,num)
         # 유효한 레시피 데이터가 있으면 반환
     if "error" not in recipe_data:
         return recipe_data
@@ -36,7 +36,7 @@ async def get_scrap() :
 
 @router.post("/recipes/test", response_model=dict)
 async def add_recipe():
-    recipe_data = await get_recipe_api(2,2) # api에서 불러올때 데이터 형식
+    recipe_data = await get_recipe_api(2,3) # api에서 불러올때 데이터 형식
     #recipe_data = await get_scrap() -> 스크랩시에 데이터 형식
     result = await recipe_service.add_recipe(recipe_data)
     if result.get("error"):
