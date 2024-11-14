@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Dict,List
 
 class Recipe(BaseModel) :
-    recipe_id : int
     title : str
     ingredients : Dict[str,List[str]]
     steps : List[str]
@@ -26,7 +25,6 @@ class Recipe(BaseModel) :
         for items in self.ingredients.values():
             ingredients_list.extend(items)
         return {
-            "recipe_id": self.recipe_id,
             "title": self.title,
             "ingredients": ingredients_list,  # 문자열의 리스트
             "steps": self.steps

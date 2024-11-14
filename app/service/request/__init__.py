@@ -1,1 +1,1 @@
-from .RecipeRequest import get_spoonacular,get_edam
+from .reicpe_request import get_recipe_api

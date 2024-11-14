@@ -1,5 +1,6 @@
 from app.core import setting
 from pinecone import Pinecone, ServerlessSpec
+import uuid
 
 class DatabaseConnection:
     def __init__(self):
@@ -28,11 +29,12 @@ class DatabaseConnection:
         # 인덱스 불러오기
         self.index = pc.Index(index_name)
 
-    def upsert_recipe(self, recipe_id, embedding, metadata):
+    def upsert_recipe(self, embedding, metadata):
+        unique_id = str(uuid.uuid4())
         # 벡터 업서트
         self.index.upsert(vectors=[
             {
-                'id': str(recipe_id),
+                'id': unique_id,
                 'values': embedding,
                 'metadata': metadata
             }
