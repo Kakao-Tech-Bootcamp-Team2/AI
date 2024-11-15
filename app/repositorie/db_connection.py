@@ -50,8 +50,8 @@ class DatabaseConnection:
 
     def get_filtered_recipes(self, query_embedding, query_ingredients: List[str], top_k=100):
         # Pinecone에서 검색
-        print("Query Embedding:", query_embedding)  # Query Embedding 확인
-        print("Query Ingredients:", query_ingredients)  # Query Ingredients 확인
+        print("쿼리 임베딩 :", query_embedding)  # Query Embedding 확인
+        print("쿼리 재료 : :", query_ingredients)  # Query Ingredients 확인
 
         results = self.index.query(
             vector=query_embedding,
@@ -60,17 +60,30 @@ class DatabaseConnection:
         )
 
         # Pinecone에서 반환된 결과 확인
-        print("Raw Results:", results)
+        print("pinecone 정보:", results)
         if not results["matches"]:
             print("No matches found in Pinecone index.")
             return []
+        
+        # 재료 이름에서 양과 단위를 제거하는 함수
+        def strip_quantities(ingredient):
+            import re
+            # 문자열 끝부분에서 숫자, 분수 및 단위 제거
+            pattern = r'[\d\/]+[a-zA-Z가-힣]*$'
+            ingredient = re.sub(pattern, '', ingredient)
+            # 일반적인 측정 단위 및 설명어도 제거
+            ingredient = re.sub(r'(약간|T|t|컵|큰술|작은술|숟가락|스푼)$', '', ingredient)
+            return ingredient.strip()
+        # Query ingredients에서 양 제거
+        stripped_query_ingredients = [strip_quantities(ing) for ing in query_ingredients]
+        print("양 제거된 값:", stripped_query_ingredients)  # 양이 제거된 Query Ingredients 확인
 
         # 결과 필터링: query_ingredients에 포함된 재료만 있는 레시피 반환
         filtered_results = []
         for match in results["matches"]:
             match_ingredients = match["metadata"].get("ingredients", [])
-            print("Match Title:", match["metadata"].get("title", ""))
-            print("Match Ingredients:", match_ingredients)
+            print("매칭 타이틀:", match["metadata"].get("title", ""))
+            print("매칭 재료:", match_ingredients)
 
             # 필터링 조건 확인
             if all(ingredient in match_ingredients for ingredient in query_ingredients):
