@@ -1,1 +1,1 @@
-from .controller import ad_recipe
+from .controller import add_recipe
