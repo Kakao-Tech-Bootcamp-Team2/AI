@@ -1,6 +1,7 @@
 from app.repositorie.db_connection import DatabaseConnection
 from app.service.preprocess.data_embedding import EmbeddingService
 from app.model.recipe_model import Recipe
+from typing import List
 
 class RecipeService:
     def __init__(self):
@@ -26,11 +27,14 @@ class RecipeService:
 
         return {"status": "success"}
 
-    def search_recipes(self, query: str):
-        # 쿼리 임베딩 생성
-        query_embedding = self.embedding_service.embed_query(query)
+    def get_filtered_recipes(self, query_ingredients: List[str]):
+        # 입력 재료를 쉼표로 결합
+        query_string = ", ".join(query_ingredients)
 
-        # Pinecone에서 유사한 레시피 검색
-        results = self.pinecone_repository.search_recipes(query_embedding)
+        # 임베딩 생성
+        query_embedding = self.embedding_service.embed_query(query_string)
 
+        # 저장소 계층에서 필터링된 결과 반환
+        results = self.pinecone_repository.get_filtered_recipes(query_embedding, query_ingredients)
+        print(results)
         return results

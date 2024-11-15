@@ -10,6 +10,7 @@ router = APIRouter()
 recipe_service = RecipeService()
 
 
+
 @router.get("/recipes/{num}}")
 async def get_recipes(num:int):
     recipe_data = await get_recipe_api(num,num)
@@ -45,5 +46,7 @@ async def add_recipe():
 
 @router.get("/recipes/search", response_model=List[Recipe])
 async def search_recipes(query: str):
-    results = await recipe_service.search_recipes(query)
+    query_ingredients = [ingredient.strip() for ingredient in query.split(",")]
+    # 서비스에 재료 리스트 전달
+    results = recipe_service.get_filtered_recipes(query_ingredients)
     return results
