@@ -78,3 +78,10 @@ def parse_scrap_data(soup, recipe_id):
         return {"error": f"ID {recipe_id}에 대한 조리 단계를 찾을 수 없습니다."}
     
     return recipe_data
+
+def parse_scrap_id(soup):
+    # 레시피 링크를 선택
+    recipe_links = soup.select('a.common_sp_link')
+    # 각 링크에서 레시피 ID 추출
+    recipe_ids = [link['href'].split('/')[-1] for link in recipe_links]
+    return recipe_ids
