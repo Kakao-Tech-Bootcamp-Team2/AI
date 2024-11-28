@@ -28,7 +28,7 @@ async def process_scraps():
         for recipe_id in recipe_ids:  # 한 번에 40개씩 처리
             recipe_data = await get_scrap(recipe_id)
             if recipe_data:
-                task = asyncio.create_task(recipe_service.add_recipe(recipe_data))
+                task = asyncio.create_task(recipe_service.add_recipe(recipe_id,recipe_data))
                 tasks.append(task)
             else:
                 logger.info(f"레시피 ID {recipe_id}에서 데이터를 찾을 수 없습니다.")
