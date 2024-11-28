@@ -31,19 +31,52 @@ class DatabaseConnection:
         # 인덱스 불러오기
         self.index = pc.Index(index_name)
 
-    def upsert_recipe(self, embedding, metadata):
-        unique_id = str(uuid.uuid4())
-        # 벡터 업서트
-        self.index.upsert(vectors=[
-            {
-                'id': unique_id,
+    async def upsert_recipe(self, recipe_id, embedding, metadata):
+        # ID로 기존 데이터 검색
+        existing_data = self.index.fetch(ids=[str(recipe_id)])
+        
+        if existing_data.vectors:
+            # 기존 데이터가 있으면 업데이트
+            print(f"레시피 {recipe_id} 업데이트 중...")
+            self.index.update(
+                id=str(recipe_id),
+                values=embedding,
+                metadata=metadata
+            )
+            return {"status": "updated"}
+        else:
+            # 새로운 데이터 삽입
+            print(f"새로운 레시피 {recipe_id} 추가 중...")
+            self.index.upsert(vectors=[{
+                'id': str(recipe_id),
                 'values': embedding,
                 'metadata': metadata
-            }
-        ])
+            }])
+            return {"status": "inserted"}
 
-    def extract_ingredient_name(self,ingredient:str) -> str : #재료 데이터에서 ()등 제거
-        return re.match(r'([^(]+)', ingredient).group(1).strip()
+    # 재료 이름에서 양과 단위를 제거하는 함수
+    def strip_quantities(self, ingredients: List[str]) -> List[str]:
+        cleaned_ingredients = []
+        for ingredient in ingredients:
+            # 숫자와 단위 제거를 위한 더 포괄적인 패턴
+            ingredient = re.sub(r'\d+\.?\d*[a-zA-Z가-힣]*', '', ingredient)
+            # 분수 형태 제거
+            ingredient = re.sub(r'\d+\/\d+', '', ingredient)
+            # 측정 단위 제거
+            ingredient = re.sub(r'(약간|T|t|컵|큰술|작은술|숟가락|스푼|g|kg|ml|L)', '', ingredient)
+            # 남은 숫자들 제거
+            ingredient = re.sub(r'\d+', '', ingredient)
+            # 특수문자 제거 (슬래시, 물결표 등)
+            ingredient = re.sub(r'[/~]+', '', ingredient)
+            # 양쪽 공백 제거하고 결과 추가
+            cleaned = ingredient.strip()
+            if cleaned:  # 빈 문자열이 아닌 경우만 추가
+                cleaned_ingredients.append(cleaned)
+        return cleaned_ingredients
+    
+    def extract_ingredient_name(self, ingredient:str) -> str:
+        # 괄호와 슬래시, 물결표 등 불필요한 문자 제거
+        return re.match(r'([^(/~]+)', ingredient).group(1).strip()
     
     def process_ingredients(self, recipe_metadata: Dict) -> List[str]: #메타데이터에서 재료만 추출
         return [self.extract_ingredient_name(ing) for ing in recipe_metadata['ingredients']]
@@ -64,19 +97,6 @@ class DatabaseConnection:
         if not results["matches"]:
             print("No matches found in Pinecone index.")
             return []
-        
-        # 재료 이름에서 양과 단위를 제거하는 함수
-        def strip_quantities(ingredient):
-            import re
-            # 문자열 끝부분에서 숫자, 분수 및 단위 제거
-            pattern = r'[\d\/]+[a-zA-Z가-힣]*$'
-            ingredient = re.sub(pattern, '', ingredient)
-            # 일반적인 측정 단위 및 설명어도 제거
-            ingredient = re.sub(r'(약간|T|t|컵|큰술|작은술|숟가락|스푼)$', '', ingredient)
-            return ingredient.strip()
-        # Query ingredients에서 양 제거
-        stripped_query_ingredients = [strip_quantities(ing) for ing in query_ingredients]
-        print("양 제거된 값:", stripped_query_ingredients)  # 양이 제거된 Query Ingredients 확인
 
         # 결과 필터링: query_ingredients에 포함된 재료만 있는 레시피 반환
         filtered_results = []
