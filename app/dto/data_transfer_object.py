@@ -8,22 +8,35 @@ class RecipeService:
         self.embedding_service = EmbeddingService()
         self.pinecone_repository = DatabaseConnection()
 
-    async def add_recipe(self,recipe_data):
+    async def add_recipe(self,recipe_id,recipe_data):
         print("레시피추가중")
         if "error" in recipe_data:
             return {"error": recipe_data["error"]}
 
         # 레시피 객체 생성
-        recipe = Recipe(**recipe_data)
+        recipe = Recipe(recipe_id=recipe_id,**recipe_data)
 
+        # 메타데이터 생성 전에 재료 전처리
+        metadata = recipe.to_metadata()
+        processed_ingredients = self.pinecone_repository.process_ingredients(metadata)
+        cleaned_ingredients = self.pinecone_repository.strip_quantities(processed_ingredients)
         # 텍스트 준비
-        text = recipe.prepare_text_for_embedding()
+        ingredients_text = ", ".join(cleaned_ingredients)
 
         # 임베딩 생성
-        embedding = self.embedding_service.embed_text([text])[0]
+        embedding = self.embedding_service.embed_text([ingredients_text])[0]
+
+        metadata['ingredients'] = cleaned_ingredients
 
         # 벡터 및 메타데이터 저장
-        self.pinecone_repository.upsert_recipe(embedding, recipe.to_metadata())
+        try:
+            result = await self.pinecone_repository.upsert_recipe(recipe.recipe_id, embedding, metadata)
+            print(f"레시피 {recipe_id} {result['status']}")
+            print(metadata['ingredients'])
+            print(metadata)
+        except Exception as e:
+            print(f"업서트 실패: {e}")
+            return {"error": str(e)}
 
         return {"status": "success"}
 
