@@ -6,6 +6,7 @@ logging.basicConfig(level=logging.INFO)
 
 class Recipe(BaseModel) :
     title : str
+    recipe_id : str
     ingredients : Dict[str,List[str]]
     steps : List[str]
 
@@ -14,11 +15,7 @@ class Recipe(BaseModel) :
             f"{category}: {', '.join(items)}"
             for category, items in self.ingredients.items()
         ])
-        steps_text = '\n'.join([
-            f"단계 {i+1}: {step}"
-            for i, step in enumerate(self.steps)
-        ])
-        full_text = f"{self.title}\n\n재료:\n{ingredients_text}\n\n조리 단계:\n{steps_text}"
+        
         logging.info(ingredients_text)
         return ingredients_text
 
