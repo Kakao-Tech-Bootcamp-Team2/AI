@@ -9,18 +9,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 recipe_service = RecipeService()
 
-
-async def get_recipes(num:int):
-    recipe_data = await get_recipe_api(num,num)
-        # 유효한 레시피 데이터가 있으면 반환
-    await asyncio.sleep(1)
-    print("task 1")
-    if "error" not in recipe_data:
-        return recipe_data
-
-    # 모든 시도가 실패한 경우 에러 메시지 반환
-    return {"error": "유효한 레시피를 찾을 수 없습니다. 다시 시도해 주세요."}
-
 async def get_scrap(recipe_id:int):
     recipe_data = await get_recipe_scrap(recipe_id)
     await asyncio.sleep(1)
@@ -28,20 +16,6 @@ async def get_scrap(recipe_id:int):
     if "error" not in recipe_data:
         return recipe_data
     return None
-
-async def process_recipes():
-    tasks = []
-    num = 1
-    while True:
-        recipe_data = await get_recipes(num)
-        if recipe_data:
-            task = asyncio.create_task(recipe_service.add_recipe(recipe_data))
-            tasks.append(task)
-            num += 1
-        else:
-            break
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    return results
 
 async def process_scraps():
     page_num = 1
