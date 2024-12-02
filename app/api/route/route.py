@@ -1,12 +1,11 @@
 from fastapi import APIRouter , HTTPException
 from app.service.request import get_recipe_api
 from app.service.scrap import get_recipe_scrap,get_recipe_id
-from app.dto.data_transfer_object import RecipeService
+from app.service.search import search_recipes_by_text
 from app.model.recipe_model import Recipe
 from typing import List
 
 router = APIRouter()
-recipe_service = RecipeService()
 
 
 
@@ -38,9 +37,6 @@ async def get_scrap_id(num) :
     # 모든 시도가 실패한 경우 에러 메시지 반환
     return {"error": "유효한 레시피를 찾을 수 없습니다. 다시 시도해 주세요."}
 
-@router.get("/recipes/search", response_model=List[Recipe]) #레시피 search 예시 route
+@router.get("/recipes/search")
 async def search_recipes(query: str):
-    query_ingredients = [ingredient.strip() for ingredient in query.split(",")]
-    # 서비스에 재료 리스트 전달
-    results = recipe_service.get_filtered_recipes(query_ingredients)
-    return results
+    return await search_recipes_by_text(query)
