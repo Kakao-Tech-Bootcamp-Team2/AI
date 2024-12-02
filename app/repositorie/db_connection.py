@@ -5,31 +5,39 @@ import re
 from typing import List,Dict
 
 class DatabaseConnection:
-    def __init__(self):
-        # Pinecone 인스턴스 생성
-        pc = Pinecone(api_key=setting.PINECONE_API_KEY)
+    _instance = None
+    _index = None
 
-        index_name = "recipes"
-        dimension = 1024  # 벡터의 차원 수
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            # Pinecone 인스턴스 생성
+            pc = Pinecone(api_key=setting.PINECONE_API_KEY)
 
-        # 인덱스 존재 여부 확인
-        if index_name not in pc.list_indexes().names():
-            # 인덱스 생성
-            pc.create_index(
-                name=index_name,
-                dimension=dimension,
-                metric='cosine',
-                spec=ServerlessSpec(
-                    cloud='aws',
-                    region='us-east-1'
+            index_name = "recipes"
+            dimension = 1024
+
+            # 인덱스 존재 여부 확인
+            if index_name not in pc.list_indexes().names():
+                pc.create_index(
+                    name=index_name,
+                    dimension=dimension,
+                    metric='cosine',
+                    spec=ServerlessSpec(
+                        cloud='aws',
+                        region='us-east-1'
+                    )
                 )
-            )
-            print(f"인덱스 '{index_name}'가 생성되었습니다.")
-        else:
-            print(f"인덱스 '{index_name}'는 이미 존재합니다. 기존 인덱스를 사용합니다.")
+                print(f"인덱스 '{index_name}'가 생성되었습니다.")
+            else:
+                print(f"인덱스 '{index_name}'는 이미 존재합니다. 기존 인덱스를 사용합니다.")
 
-        # 인덱스 불러오기
-        self.index = pc.Index(index_name)
+            # 인덱스 불러오기
+            cls._index = pc.Index(index_name)
+        return cls._instance
+
+    def __init__(self):
+        self.index = self._index
 
     async def upsert_recipe(self, recipe_id, embedding, metadata):
         # ID로 기존 데이터 검색
