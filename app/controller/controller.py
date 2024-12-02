@@ -1,4 +1,3 @@
-from app.service.request import get_recipe_api
 from app.service.scrap import get_recipe_scrap,get_recipe_id
 from app.dto.data_transfer_object import RecipeService
 import asyncio

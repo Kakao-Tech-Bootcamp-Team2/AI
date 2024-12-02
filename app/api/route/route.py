@@ -1,23 +1,9 @@
-from fastapi import APIRouter , HTTPException
-from app.service.request import get_recipe_api
+from fastapi import APIRouter 
 from app.service.scrap import get_recipe_scrap,get_recipe_id
 from app.service.search import search_recipes_by_text
-from app.model.recipe_model import Recipe
-from typing import List
 
 router = APIRouter()
 
-
-
-@router.get("/recipes/{num}}") #레시피 API 예시 route
-async def get_recipes(num:int):
-    recipe_data = await get_recipe_api(num,num)
-        # 유효한 레시피 데이터가 있으면 반환
-    if "error" not in recipe_data:
-        return recipe_data
-
-    # 모든 시도가 실패한 경우 에러 메시지 반환
-    return {"error": "유효한 레시피를 찾을 수 없습니다. 다시 시도해 주세요."}
 
 @router.get("/scrap/{recipe_id}") #레시피 크롤링 예시 route
 async def get_scrap(recipe_id) :
