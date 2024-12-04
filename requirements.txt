@@ -11,3 +11,4 @@ sentence_transformers
 transformers
 langchain-huggingface
 aiohttp~=3.10.10
+langchain-openai
