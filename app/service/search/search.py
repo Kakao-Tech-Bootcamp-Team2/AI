@@ -47,10 +47,12 @@ async def search_recipes(query_embedding: List[float], query_ingredients: List[s
         match_id = match['id'] 
         match_ingredients = match["metadata"].get("ingredients", [])
         match_title = match["metadata"].get("title", "")
+        raw_ingredients = match["metadata"].get("raw_ingredients", [])  # raw_ingredients 추가
         print(f"\n매칭 항목:")
         print(f"id : {match_id}")
         print(f"제목: {match_title}")
         print(f"재료: {match_ingredients}")
+        print(f"날것의 재료: {raw_ingredients}")
         print(f"점수: {match['score']}")
 
         if all(ingredient in match_ingredients for ingredient in query_ingredients):
@@ -58,7 +60,7 @@ async def search_recipes(query_embedding: List[float], query_ingredients: List[s
             filtered_results.append({
                 "id" : match_id,
                 "title": match_title,
-                "ingredients": {"all": match_ingredients},
+                "ingredients": raw_ingredients,
                 "steps": match["metadata"].get("steps", [])
             })
         else:
