@@ -1,7 +1,7 @@
 from fastapi import APIRouter 
 from app.service.scrap import get_recipe_scrap,get_recipe_id
 from app.service.search import search_recipes_by_text
-
+from app.service.llm import generate_response
 router = APIRouter()
 
 
@@ -24,5 +24,10 @@ async def get_scrap_id(num) :
     return {"error": "유효한 레시피를 찾을 수 없습니다. 다시 시도해 주세요."}
 
 @router.get("/recipes/search")
-async def search_recipes(query: str):
-    return await search_recipes_by_text(query)
+def search_recipes(query: str):
+    return search_recipes_by_text(query)
+
+@router.get("/recipes/llm")
+def generate_recipe(query: str):
+    search_response = search_recipes_by_text(query)
+    return generate_response(query,search_response)
