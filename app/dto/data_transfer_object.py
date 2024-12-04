@@ -20,7 +20,7 @@ class RecipeService:
         metadata = recipe.to_metadata()
         processed_ingredients = self.pinecone_repository.process_ingredients(metadata)
         cleaned_ingredients = self.pinecone_repository.strip_quantities(processed_ingredients)
-        # 텍스트 준비
+        metadata['raw_ingredients'] = metadata["ingredients"]
         ingredients_text = ", ".join(cleaned_ingredients)
 
         # 임베딩 생성
@@ -32,8 +32,7 @@ class RecipeService:
         try:
             result = await self.pinecone_repository.upsert_recipe(recipe.recipe_id, embedding, metadata)
             print(f"레시피 {recipe_id} {result['status']}")
-            print(metadata['ingredients'])
-            print(metadata)
+            
         except Exception as e:
             print(f"업서트 실패: {e}")
             return {"error": str(e)}
