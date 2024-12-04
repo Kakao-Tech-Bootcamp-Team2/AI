@@ -2,7 +2,7 @@ from typing import List, Dict
 from app.repositorie.db_connection import DatabaseConnection
 from app.service.preprocess.data_embedding import EmbeddingService
 
-async def search_recipes_by_text(query: str, top_k: int = 1000) -> List[Dict]:
+def search_recipes_by_text(query: str, top_k: int = 1000) -> List[Dict]:
     # 쿼리 전처리
     if "," not in query:
         query_ingredients = [query.strip()]
@@ -19,9 +19,9 @@ async def search_recipes_by_text(query: str, top_k: int = 1000) -> List[Dict]:
     query_embedding = embedding_service.embed_query(query_text)
     print(f"임베딩 벡터 길이: {len(query_embedding)}")  # 디버깅 로그
     
-    return await search_recipes(query_embedding, query_ingredients, top_k)
+    return search_recipes(query_embedding, query_ingredients, top_k)
 
-async def search_recipes(query_embedding: List[float], query_ingredients: List[str], top_k: int = 1000) -> List[Dict]:
+def search_recipes(query_embedding: List[float], query_ingredients: List[str], top_k: int = 1000) -> List[Dict]:
     db = DatabaseConnection()
     
     #디버깅 로그
