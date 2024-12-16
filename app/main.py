@@ -1,23 +1,16 @@
 from fastapi import FastAPI
 from app.api.route.route import router
 from contextlib import asynccontextmanager
-from app.controller.controller import add_recipe
+from app.controller.controller import stop_crawling, resume_crawling
 import asyncio
-
-_startup_task = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _startup_task
-    if _startup_task is None:
-        _startup_task = asyncio.create_task(add_recipe())
+    # 서버 시작 시 크롤링 시작
+    await resume_crawling()
     yield
-    if _startup_task:
-        _startup_task.cancel()
-        try:
-            await _startup_task
-        except asyncio.CancelledError:
-            pass
+    # 서버 종료 시 크롤링 중지
+    stop_crawling()
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router)
