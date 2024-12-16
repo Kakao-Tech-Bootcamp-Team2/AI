@@ -59,9 +59,16 @@ def parse_scrap_data(soup, recipe_id):
     ingredient_div = soup.find('div', class_='ready_ingre3')
     if ingredient_div:
         for ul in ingredient_div.find_all('ul'):
-            b_tag = ul.find('b')
+            b_tag = ul.find('b', class_='ready_ingre3_tt')
             category = b_tag.get_text(strip=True) if b_tag else "재료"
-            items = [li.get_text(strip=True).replace("구매", "").strip() for li in ul.find_all('li')]
+            items = []
+            for li in ul.find_all('li'):
+                name_tag = li.find('div', class_='ingre_list_name')
+                amount_tag = li.find('span', class_='ingre_list_ea')
+                name = name_tag.get_text(strip=True) if name_tag else ""
+                amount = amount_tag.get_text(strip=True) if amount_tag else ""
+                if name:
+                    items.append(f"{name} {amount}".strip())
             ingredients[category] = items
         recipe_data['ingredients'] = ingredients
     else:
@@ -78,3 +85,12 @@ def parse_scrap_data(soup, recipe_id):
         return {"error": f"ID {recipe_id}에 대한 조리 단계를 찾을 수 없습니다."}
     
     return recipe_data
+    
+    return recipe_data
+
+def parse_scrap_id(soup):
+    # 레시피 링크를 선택
+    recipe_links = soup.select('a.common_sp_link')
+    # 각 링크에서 레시피 ID 추출
+    recipe_ids = [link['href'].split('/')[-1] for link in recipe_links]
+    return recipe_ids

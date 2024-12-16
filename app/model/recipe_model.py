@@ -1,8 +1,12 @@
 from pydantic import BaseModel
 from typing import Dict,List
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 class Recipe(BaseModel) :
     title : str
+    recipe_id : str
     ingredients : Dict[str,List[str]]
     steps : List[str]
 
@@ -11,13 +15,9 @@ class Recipe(BaseModel) :
             f"{category}: {', '.join(items)}"
             for category, items in self.ingredients.items()
         ])
-        steps_text = '\n'.join([
-            f"단계 {i+1}: {step}"
-            for i, step in enumerate(self.steps)
-        ])
-        full_text = f"{self.title}\n\n재료:\n{ingredients_text}\n\n조리 단계:\n{steps_text}"
-        print(full_text)
-        return full_text
+        
+        logging.info(ingredients_text)
+        return ingredients_text
 
     def to_metadata(self) -> dict:
         # 재료 딕셔너리의 모든 값을 하나의 리스트로 결합
